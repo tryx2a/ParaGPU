@@ -1,0 +1,19 @@
+# mc price: 1.164303
+# variance: 10.682096
+
+
+option size <int> 5
+strike <float> 50 
+spot <vector> 50 40 60 30 20  
+maturity <float> 2
+volatility <vector> 0.2
+interest rate  <float>  0.05
+correlation <float> 0.3
+
+option type <string> barrier_l
+payoff coefficients <vector> 0.2 0.2 0.2 0.2 0.2
+lower barrier <vector> 40 30 45 20 10
+
+timestep number <int> 24
+sample number <int> 100000
+
