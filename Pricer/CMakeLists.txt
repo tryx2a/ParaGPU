@@ -19,6 +19,9 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
 endif ()
 
+# Detect Cuda
+find_package(CUDA REQUIRED)
+include_directories(${CUDA_INCLUDE_DIR})
 
 # Detect Boost
 set(Boost_NO_BOOST_CMAKE on)
