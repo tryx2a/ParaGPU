@@ -24,7 +24,7 @@ int main(int argc, char ** argv) {
   	CudaLib* cudaL = new CudaLib();
   	//512 est dans le maxDevice
 
-
+  	cudaL->loadBS(mc->mod_);
 
   	delete P;
   	delete mc;
