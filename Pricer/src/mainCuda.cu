@@ -20,11 +20,9 @@ int main(int argc, char ** argv) {
   	//std::cout << "Prix  : "<< prix << std::endl;
   	//std::cout << "IC : "<< ic << std::endl;
 
-  	//Permet de determiner
-  	CudaLib* cudaL = new CudaLib();
-  	//512 est dans le maxDevice
-
-  	cudaL->loadBS(mc->mod_);
+  	CudaLib* cudaL = new CudaLib(mc);
+  	//Allocation des différents paramètres dans le GPU
+  	//cudaL->allocMonteCarlo(mc);
 
   	delete P;
   	delete mc;

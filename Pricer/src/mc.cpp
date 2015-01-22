@@ -22,12 +22,10 @@ MonteCarlo::MonteCarlo(Param* P)
   P->extract("trend",trend,option_size);
   P->extract("hedging dates number", this->H_);
   P->extract("fd step", this->h_);
+  P->extract("sample number", this->samples_);
 
   this->mod_ = new BS(spot, sigma, rho, r, option_size, trend);
   this->opt_ = MonteCarlo::createOption(P);
-  
-
-  P->extract("sample number", this->samples_);
 
   this->rng = pnl_rng_create(PNL_RNG_MERSENNE);
   pnl_rng_sseed (this->rng, 0);
