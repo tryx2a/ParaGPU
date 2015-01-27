@@ -23,8 +23,8 @@ CudaLib::CudaLib(MonteCarlo* mc){
   this->memcpyMonteCarlo(mc);
 
   /// Initialise la grille et les dimensions de chaque bloc
-  dim3 DimGrid(4,4,1);
-  dim3 DimBlock(16,16,1);
+  dim3 DimGrid(mc->samples_/this->maxDevice,1,1);
+  dim3 DimBlock(this->maxDevice,1,1);
 }
 
 /*
