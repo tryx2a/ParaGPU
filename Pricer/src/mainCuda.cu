@@ -10,12 +10,25 @@
 
 
 
+
+__global__ void priceGPU(float &prix, float &ic, float h, float H, int samples, int size, float r, float *trend,
+                        float rho, float *spot, float *sigma, float *chol, float T, int timeSteps, float *payoffCoeff, float strike) {
+
+    int col = blockIdx.x * blockDim.x + threadIdx.x; 
+    int row = blockIdx.y * blockDim.y + threadIdx.y; 
+ 
+
+
+}
+
+
+
 int main(int argc, char ** argv) {
 
 	const char *infile = argv[1];
 
 	Param *P = new Parser(infile);
-  	MonteCarlo *mc = new MonteCarlo(P);
+  MonteCarlo *mc = new MonteCarlo(P);
   	//double prix;
   	//double ic;
 
@@ -23,7 +36,7 @@ int main(int argc, char ** argv) {
   	//std::cout << "Prix  : "<< prix << std::endl;
   	//std::cout << "IC : "<< ic << std::endl;
 
-  	CudaLib* cudaL = new CudaLib(mc);
+  CudaLib* cudaL = new CudaLib(mc);
   	//Allocation des différents paramètres dans le GPU
   	//cudaL->allocMonteCarlo(mc);
 
@@ -35,6 +48,8 @@ int main(int argc, char ** argv) {
 
   	delete P;
   	delete mc;
+
+
  
 	return 0;
 }
