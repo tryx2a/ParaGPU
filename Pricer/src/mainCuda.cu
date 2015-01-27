@@ -6,6 +6,9 @@
 #include "parser.h"
 #include "mc.h"
 #include "cudaLib.h"
+#include "utils.h"
+
+
 
 int main(int argc, char ** argv) {
 
@@ -23,6 +26,12 @@ int main(int argc, char ** argv) {
   	CudaLib* cudaL = new CudaLib(mc);
   	//Allocation des différents paramètres dans le GPU
   	//cudaL->allocMonteCarlo(mc);
+
+    float* test = utils::convertPnlVectToFloat(mc->mod_->spot_);
+
+    for(int i=0; i< mc->mod_->size_; i++){
+      std::cout << "Component : "<<test[i]<<std::endl;
+    }
 
   	delete P;
   	delete mc;

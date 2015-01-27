@@ -29,4 +29,16 @@ namespace utils {
     return res;
   }
 
+  float* convertPnlVectToFloat(PnlVect* u){
+    int taille = u->size;
+    
+    float* res = new float[taille];
+
+    for(int i=0; i<taille; i++){
+      res[i] = (float)(GET(u,i));
+    }
+      
+    return res;
+  }
+
 } // utils
