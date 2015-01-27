@@ -1,5 +1,6 @@
 #include "cudaLib.h"
 #include "optionBasket.h"
+#include "utils.h"
 
 
 /*
@@ -99,7 +100,7 @@ void CudaLib::memcpyOption(Option* opt){
 
     //Chargement en mémoire du tableau du vecteur PayoffCoeff
   OptionBasket *basket = dynamic_cast<OptionBasket *>(opt);
-  err = cudaMemcpy(this->payoffCoeff, basket->payoffCoeff_->array, basket->payoffCoeff_->size*sizeof(float), cudaMemcpyHostToDevice);
+  err = cudaMemcpy(this->payoffCoeff, utils::convertPnlVectToFloat(basket->payoffCoeff_->array,basket->payoffCoeff_->size), basket->payoffCoeff_->size*sizeof(float), cudaMemcpyHostToDevice);
   if(err != cudaSuccess){
     printf("%s in %s at line %d\n", cudaGetErrorString(err),__FILE__,__LINE__);
     exit(EXIT_FAILURE);
@@ -110,28 +111,28 @@ void CudaLib::memcpyBS(BS* bs){
   cudaError_t err; 
 
     //*trend array
-  err = cudaMemcpy(this->trend, bs->trend->array, bs->trend->size*sizeof(float), cudaMemcpyHostToDevice);
+  err = cudaMemcpy(this->trend, utils::convertPnlVectToFloat(bs->trend->array,bs->size_), bs->trend->size*sizeof(float), cudaMemcpyHostToDevice);
   if(err != cudaSuccess){
     printf("%s in %s at line %d\n", cudaGetErrorString(err),__FILE__,__LINE__);
     exit(EXIT_FAILURE);
   }
 
     //*sigma_ array
-  err = cudaMemcpy(this->sigma, bs->sigma_->array, bs->sigma_->size*sizeof(float), cudaMemcpyHostToDevice);
+  err = cudaMemcpy(this->sigma, utils::convertPnlVectToFloat(bs->sigma_->array,bs->size_), bs->sigma_->size*sizeof(float), cudaMemcpyHostToDevice);
   if(err != cudaSuccess){
     printf("%s in %s at line %d\n", cudaGetErrorString(err),__FILE__,__LINE__);
     exit(EXIT_FAILURE);
   }
 
     //*spot_ array
-  err = cudaMemcpy(this->spot, bs->spot_->array, bs->spot_->size*sizeof(float), cudaMemcpyHostToDevice);
+  err = cudaMemcpy(this->spot, utils::convertPnlVectToFloat(bs->spot_->array,bs->size_), bs->spot_->size*sizeof(float), cudaMemcpyHostToDevice);
   if(err != cudaSuccess){
     printf("%s in %s at line %d\n", cudaGetErrorString(err),__FILE__,__LINE__);
     exit(EXIT_FAILURE);
   }
 
     //*chol_ array
-  err = cudaMemcpy(this->chol, bs->chol->array, bs->chol->m*bs->chol->n*sizeof(float), cudaMemcpyHostToDevice);
+  err = cudaMemcpy(this->chol, utils::convertPnlVectToFloat(bs->chol->array,bs->chol->m*bs->chol->n), bs->chol->m*bs->chol->n*sizeof(float), cudaMemcpyHostToDevice);
   if(err != cudaSuccess){
     printf("%s in %s at line %d\n", cudaGetErrorString(err),__FILE__,__LINE__);
     exit(EXIT_FAILURE);

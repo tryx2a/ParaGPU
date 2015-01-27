@@ -7,7 +7,7 @@
 namespace utils {
   double computePayoff(const PnlMat *path, const PnlVect *payoffCoeff_, int TimeSteps_, double strike);
 
-  float* convertPnlVectToFloat(PnlVect* u);
+  float* convertPnlVectToFloat(double *tab,int size);
 } // utils
 
 

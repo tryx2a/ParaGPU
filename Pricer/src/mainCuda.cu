@@ -40,7 +40,7 @@ int main(int argc, char ** argv) {
   	//Allocation des différents paramètres dans le GPU
   	//cudaL->allocMonteCarlo(mc);
 
-    float* test = utils::convertPnlVectToFloat(mc->mod_->spot_);
+    float* test = utils::convertPnlVectToFloat(mc->mod_->spot_->array, mc->mod_->size_);
 
     for(int i=0; i< mc->mod_->size_; i++){
       std::cout << "Component : "<<test[i]<<std::endl;
