@@ -33,8 +33,11 @@ __global__ void kernel(float* N, curandState* globalState, int n, int nbTours)
             k-=(n*n-1);
         }
         N[i] = k;
+        
     }
+
 }
+
 
 int main() 
 {
@@ -58,6 +61,8 @@ int main()
     {
         cout<<N2[i]<<endl;
     }
+
+
 
     return 0;
 }

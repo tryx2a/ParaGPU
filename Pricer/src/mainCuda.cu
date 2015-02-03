@@ -10,6 +10,36 @@
 
 
 
+__device__ void assetGPU(float* path, int m, int n, float T, int N){
+
+}
+
+__device__ float payoffBasketGPU(float* path, float* payoffCoeff, int timeSteps, float strike, int sizeOpt, float T){ //m ligne, n colonnes
+
+  float res = 0.0;
+  
+  int indiceDernierligne = timeSteps*sizeOpt;
+
+  for(int j = 0; j<sizeOpt; j++){
+      res += path[j + indiceDernierligne] * payoffCoeff[j];
+  }
+
+  res -= strike;
+
+  if(res<=0.0){
+    return 0.0;
+  }
+
+  return res;
+}
+
+__global__ void priceGPU(float &prix, float &ic, float h, float H, int samples, int size, float r, float *trend,
+                        float rho, float *spot, float *sigma, float *chol, float T, int timeSteps, float *payoffCoeff, float strike) {
+
+    //int col = blockIdx.x * blockDim.x + threadIdx.x; 
+    //int row = blockIdx.y * blockDim.y + threadIdx.y; 
+
+}
 
 // __global__ void matrixMultiply(float * A, float * B, float * C,
 //              int numARows, int numAColumns,
@@ -31,15 +61,6 @@
 // }
 
 
-__global__ void priceGPU(float &prix, float &ic, float h, float H, int samples, int size, float r, float *trend,
-                        float rho, float *spot, float *sigma, float *chol, float T, int timeSteps, float *payoffCoeff, float strike) {
-
-    int col = blockIdx.x * blockDim.x + threadIdx.x; 
-    int row = blockIdx.y * blockDim.y + threadIdx.y; 
- 
-
-
-}
 
 
 
