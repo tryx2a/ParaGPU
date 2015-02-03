@@ -9,7 +9,7 @@ using namespace std;
 
 __device__ float generate( curandState* globalState, int ind ) 
 {
-    int ind = threadIdx.x;
+    //int ind = threadIdx.x;
     curandState localState = globalState[ind];
     //float RANDOM = curand_uniform( &localState );
     float RANDOM = curand_normal( &localState );

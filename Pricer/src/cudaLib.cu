@@ -23,6 +23,9 @@ CudaLib::CudaLib(MonteCarlo* mc){
   this->allocMonteCarlo(mc);
   this->memcpyMonteCarlo(mc);
 
+  int nbTourModifie = (int)(mc->samples_/this->maxDevice) * this->maxDevice;
+  mc->samples_ = nbTourModifie;
+
   /// Initialise la grille et les dimensions de chaque bloc
   dim3 DimGrid(mc->samples_/this->maxDevice,1,1);
   dim3 DimBlock(this->maxDevice,1,1);
