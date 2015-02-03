@@ -36,8 +36,6 @@ __global__ void priceGPU(float &prix, float &ic, float h, float H, int samples, 
 
     int col = blockIdx.x * blockDim.x + threadIdx.x; 
     int row = blockIdx.y * blockDim.y + threadIdx.y; 
- 
-
 
 }
 
