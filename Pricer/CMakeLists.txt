@@ -64,3 +64,11 @@ install(TARGETS cuda_info DESTINATION bin)
 cuda_add_executable(mainCuda src/mainCuda.cu src/cudaLib.cu src/bs.cpp src/parser.cpp src/utils.cpp src/option.cpp src/mc.cpp src/optionAsian.cpp src/optionBarrier.cpp src/optionBarrierLow.cpp src/optionBarrierUp.cpp src/optionBasket.cpp src/optionPerformance.cpp)
 target_link_libraries(mainCuda ${LIBS})
 install(TARGETS mainCuda DESTINATION bin)
+
+cuda_add_executable(test_rand src/rand.cu)
+target_link_libraries(test_rand ${LIBS})
+install(TARGETS test_rand DESTINATION bin)
+
+cuda_add_executable(test_rand_2 src/rand2.cu)
+target_link_libraries(test_rand_2 ${LIBS})
+install(TARGETS test_rand_2 DESTINATION bin)

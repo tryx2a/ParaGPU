@@ -11,6 +11,26 @@
 
 
 
+// __global__ void matrixMultiply(float * A, float * B, float * C,
+//              int numARows, int numAColumns,
+//              int numBRows, int numBColumns,
+//              int numCRows, int numCColumns) {
+//     /// Insérer le code
+//     int Row = blockIdx.y * blockDim.y + threadIdx.y;
+//     int Col = blockIdx.x * blockDim.x + threadIdx.x;
+
+//     if((Row < numARows) && (Col < numBColumns)){
+//       float Pvalue = 0.0;
+//       for(int k = 0; k < numAColumns; ++k){
+//         Pvalue += A[Row*numAColumns+k]*B[k*numBColumns+Col];
+//       }
+  
+//       C[Row*numCColumns+Col] = Pvalue;
+//     }
+    
+// }
+
+
 __global__ void priceGPU(float &prix, float &ic, float h, float H, int samples, int size, float r, float *trend,
                         float rho, float *spot, float *sigma, float *chol, float T, int timeSteps, float *payoffCoeff, float strike) {
 
