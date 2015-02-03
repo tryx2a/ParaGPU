@@ -8,28 +8,73 @@
 #include "cudaLib.h"
 #include "utils.h"
 
+//Generateur aleatoire
+__device__ float generate( curandState* globalState, int ind ) 
+{
+    int ind = threadIdx.x;
+    curandState localState = globalState[ind];
+    //float RANDOM = curand_uniform( &localState );
+    float RANDOM = curand_normal( &localState );
+    globalState[ind] = localState;
+    return RANDOM;
+}
+//Generateur aleatoire
+__global__ void setup_kernel ( curandState * state, unsigned long seed )
+{
+    int id = threadIdx.x;
+    curand_init ( seed, id, 0, &state[id] );
+}
 
+__device__ float computeIterationGPU(float currentPrice, float h, int assetIndex, float* vectGauss, int sizeOpt, float* chol, float* sigma, float r){
+  float scalarResult = 0.0;
 
-__device__ void assetGPU(float* path, int m, int n, float T, int N){
+  //Produit scalaire
+  for(int i=0; i<sizeOpt;i++){
+    scalarResult += chol[i + assetIndex*sizeOpt]*vectGauss[i];
+  }
+
+  float sigmaAsset = sigma[assetIndex]; // recup la vol de l'asset
+
+  float expArg = sqrt(h)*scalarResult*sigmaAsset + h*(r - (sigmaAsset*sigmaAsset/2));
+
+  return currentPrice*exp(expArg);
+}
+
+__device__ void assetGPU(float* path, int m, int n, float T, int N, int sizeOpt, float* spot, float* sigma, float* chol, float r){
+
+  //Recopie des spots
+  for(int j=0; j < sizeOpt ; j++){
+    path[j] = spot[j];
+  }
+
+  //Creation vecteur gausse
+  float* vectGauss = new float[sizeOpt];
+
+  //Calcul de trajectoire
+  for(int i =1 ; i < N+1 ; i++){
+    //invocation du vecteur gaussien
+    
+
+    for(int j = 0 ; j < sizeOpt ; j ++){
+      path[j + i*sizeOpt] = computeIterationGPU( path[j + (i-1)*sizeOpt], T/N, j, vectGauss, sizeOpt, chol, sigma, r);
+    }
+
+  }
 
 }
+
 
 __device__ float payoffBasketGPU(float* path, float* payoffCoeff, int timeSteps, float strike, int sizeOpt, float T){ //m ligne, n colonnes
 
   float res = 0.0;
-  
   int indiceDernierligne = timeSteps*sizeOpt;
-
   for(int j = 0; j<sizeOpt; j++){
       res += path[j + indiceDernierligne] * payoffCoeff[j];
   }
-
   res -= strike;
-
   if(res<=0.0){
-    return 0.0;
+    res = 0.0;
   }
-
   return res;
 }
 
