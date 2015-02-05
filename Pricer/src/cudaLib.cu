@@ -19,13 +19,14 @@ CudaLib::CudaLib(MonteCarlo* mc){
     }
   }
   
+  /*On aligne le nombre de samples sur un multiple de maxDevice*/
+  int nbTourModifie = (int)(mc->samples_/this->maxDevice) * this->maxDevice;
+  mc->samples_ = nbTourModifie;
+
   /* Chargement des objets de type pnl dans la mémoire GPU */
   this->allocMonteCarlo(mc);
   this->memcpyMonteCarlo(mc);
 
-  /// Initialise la grille et les dimensions de chaque bloc
-  dim3 DimGrid(mc->samples_/this->maxDevice,1,1);
-  dim3 DimBlock(this->maxDevice,1,1);
 }
 
 /*
@@ -90,8 +91,33 @@ void CudaLib::allocMonteCarlo(MonteCarlo* mc){
 
     //Allocation de l'option
   allocOption(mc->opt_);
+
     //Allocation du modèle de Black&Scholes
   allocBS(mc->mod_);
+
+    //Allocation du tableau contenant une une matrice path pour chaque device
+  cudaError_t err;
+
+    //tabPath
+  err = cudaMalloc( (void**) &(this->tabPath), sizeof(float)*mc->samples_*(mc->opt_->TimeSteps_ + 1)*mc->mod_->size_);
+  if(err != cudaSuccess){
+    printf("%s in %s at line %d\n", cudaGetErrorString(err),__FILE__,__LINE__);
+    exit(EXIT_FAILURE);
+  }
+
+   //tabPrice
+  err = cudaMalloc( (void**) &(this->tabPrice), sizeof(float)*mc->samples_);
+  if(err != cudaSuccess){
+    printf("%s in %s at line %d\n", cudaGetErrorString(err),__FILE__,__LINE__);
+    exit(EXIT_FAILURE);
+  }
+
+   //tabIC
+  err = cudaMalloc( (void**) &(this->tabIC), sizeof(float)*mc->samples_);
+  if(err != cudaSuccess){
+    printf("%s in %s at line %d\n", cudaGetErrorString(err),__FILE__,__LINE__);
+    exit(EXIT_FAILURE);
+  }
 
 }
 

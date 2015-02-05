@@ -11,7 +11,8 @@ __device__ float generate( curandState* globalState, int ind )
 {
     //int ind = threadIdx.x;
     curandState localState = globalState[ind];
-    float RANDOM = curand_uniform( &localState );
+    //float RANDOM = curand_uniform( &localState );
+    float RANDOM = curand_normal( &localState );
     globalState[ind] = localState;
     return RANDOM;
 }
@@ -22,19 +23,22 @@ __global__ void setup_kernel ( curandState * state, unsigned long seed )
     curand_init ( seed, id, 0, &state[id] );
 }
 
-__global__ void kernel(float* N, curandState* globalState, int n, int nbTours)
+__global__ void kernel(float* tabGauss, curandState* globalState, int n, int nbTours)
 {
     // generate random numbers
     for(int i=0;i<nbTours;i++)
     {
         float k = generate(globalState, i) * 1;
-        while(k > n*n-1)
+        
+        /*while(k > n*n-1)
         {
             k-=(n*n-1);
-        }
-        N[i] = k;
+        }*/
+
+        tabGauss[i] = k;
     }
 }
+
 
 int main() 
 {
@@ -58,6 +62,8 @@ int main()
     {
         cout<<N2[i]<<endl;
     }
+
+
 
     return 0;
 }

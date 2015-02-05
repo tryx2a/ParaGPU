@@ -9,14 +9,21 @@ public:
         //Nombre Maximum de Threads
 	int maxDevice;
         
-        /* Paramètre de BS*/
+        /* Paramètres de BS*/
         float *trend; /// trend des actifs du marché
         float *sigma; /// vecteur de volatilités
         float *spot; /// valeurs initiales du sous-jacent
         float *chol; /// matrice de cholesky calculé dans le constructeur
         
-        /* Paramètre Option */
+        /* Paramètres Option */
         float *payoffCoeff; /// payoff coefficient
+
+
+        /* Paramètres autres */
+        float *tabPath; /// Tableau contenant une matrice path par device
+        float *tabPrice; /// Tableau contenant le prix calculé par chaque thread
+        float *tabIC; /// Tableau contenant la longueur de l'interval de confiance calculé par chaque thread
+
 
         /**
          * Constructeur de CudaLib
