@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <stdlib.h>
-#include <math.h>
+#include <cmath>
 #include "parser.h"
 #include "mc.h"
 #include "utils.h"
@@ -41,9 +41,10 @@ __device__ float computeIterationGPU(float currentPrice, float h, int assetIndex
 
   float sigmaAsset = sigma[assetIndex]; // recup la vol de l'asset
 
-  float expArg = sqrt(h)*scalarResult*sigmaAsset + h*(r - (sigmaAsset*sigmaAsset/2));
+  float expArg = sqrtf(h)*scalarResult*sigmaAsset + h*(r - (sigmaAsset*sigmaAsset/2));
+  float fexp = expf(expArg);
 
-  return currentPrice*exp(expArg);
+  return fexp;
 }
 
 
@@ -56,12 +57,12 @@ __device__ void assetGPU(float* path, float T, int N, int sizeOpt, float* spot, 
   for(int j=0; j < sizeOpt ; j++){
     path[ind + j] = spot[j];
   }
-
+  
   //Calcul de trajectoire
   for(int i = 1 ; i < N+1 ; i++){
 
     for(int j = 0 ; j < sizeOpt ; j ++){
-      path[ind + j + i*sizeOpt] = computeIterationGPU( path[ind + j + (i-1)*sizeOpt], T/N, j, globalState, sizeOpt, chol, sigma, r, maxDevice);
+      path[ind + j + i*sizeOpt] = computeIterationGPU( path[ind + j + (i-1)*sizeOpt], T/N, j, globalState, sizeOpt, chol, sigma, r, maxDevice) * path[ind + j + (i-1)*sizeOpt];
     }
 
   }
@@ -96,11 +97,10 @@ __global__ void priceGPU(float *tabPrice, float *tabIC, float *tabPath, int size
     setup_kernel (globalState, seed, maxDevice);
     
     assetGPU(tabPath, T, timeSteps, size, spot, sigma, chol, r, globalState, maxDevice);
-    //float payOff = payoffBasketGPU(tabPath, payoffCoeff, timeSteps, strike, size, T, maxDevice);
+    float payOff = payoffBasketGPU(tabPath, payoffCoeff, timeSteps, strike, size, T, maxDevice);
 
-    //tabPrice[ind] = payOff;
-    tabPrice[ind] = tabPath[0];
-    //tabIC[ind] = payOff * payOff;
+    tabPrice[ind] = payOff;
+    tabIC[ind] = payOff * payOff;
 
 }
 
@@ -143,11 +143,15 @@ int main(int argc, char ** argv) {
 
 
   //float *icTable = new float[mc->samples_]; 
-
-  for(int i = 0; i<10; i++){
-    std::cout<<priceTable[i]<<std::endl;
+  float prixFin = 0;
+  float coeffActu = exp(-mc->mod_->r_*mc->opt_->T_);
+  for(int i = 0; i<mc->samples_; i++){
+      prixFin += priceTable[i];
   }
 
+  prixFin = prixFin*coeffActu/mc->samples_;
+
+  std::cout<<prixFin<<std::endl;
 
   cudaFree(cudaL->sigma);
   cudaFree(cudaL->spot);
