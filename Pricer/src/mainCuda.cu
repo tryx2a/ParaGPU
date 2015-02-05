@@ -99,7 +99,7 @@ __global__ void priceGPU(float *tabPrice, float *tabIC, float *tabPath, int size
     //float payOff = payoffBasketGPU(tabPath, payoffCoeff, timeSteps, strike, size, T, maxDevice);
 
     //tabPrice[ind] = payOff;
-    tabPrice[ind] = 3.14;//tabPath[0];
+    tabPrice[ind] = 3.14;
     //tabIC[ind] = payOff * payOff;
 
 }
@@ -149,9 +149,17 @@ int main(int argc, char ** argv) {
   }
 
 
+  cudaFree(cudaL->sigma);
+  cudaFree(cudaL->spot);
+  cudaFree(cudaL->chol);
+  cudaFree(cudaL->payoffCoeff);
+  cudaFree(cudaL->tabPath);
+  cudaFree(cudaL->tabPrice);
+  cudaFree(cudaL->tabIC);
+  cudaFree(cudaL->trend);
+
   delete P;
   delete mc;
-  delete priceTable;
 
  
 	return 0;
