@@ -25,7 +25,7 @@ __device__ void setup_kernel ( curandState * state, unsigned long seed, int maxD
 }
 
 
-
+//Méthode permettant de calculer le prix d'un actif en t+1 connaissant sa valeur en t
 __device__ float computeIterationGPU(float currentPrice, float h, int assetIndex, curandState* globalState, int sizeOpt, float* chol, float* sigma, float r, int maxDevice){
   float scalarResult = 0.0;
 
@@ -43,7 +43,7 @@ __device__ float computeIterationGPU(float currentPrice, float h, int assetIndex
 }
 
 
-
+//Méthode remplissant une matrice path avec les trajectoires des sous jacents de l'option à pricer
 __device__ void assetGPU(float* path, float T, int N, int sizeOpt, float* spot, float* sigma, float* chol, float r, curandState* globalState, int maxDevice){
 
   int ind = (maxDevice * blockIdx.x + threadIdx.x) * (sizeOpt * (N+1));
@@ -65,8 +65,8 @@ __device__ void assetGPU(float* path, float T, int N, int sizeOpt, float* spot, 
 
 }
 
-
-__device__ float payoffBasketGPU(float* path, float* payoffCoeff, int timeSteps, float strike, int sizeOpt, float T, int maxDevice){ //m ligne, n colonnes
+//Calcul du payOff pour une optionBasket
+__device__ float payoffBasketGPU(float* path, float* payoffCoeff, int timeSteps, float strike, int sizeOpt, float T, int maxDevice){ 
 
   int ind = (maxDevice * blockIdx.x + threadIdx.x) * (sizeOpt * (timeSteps+1));
 
@@ -82,6 +82,77 @@ __device__ float payoffBasketGPU(float* path, float* payoffCoeff, int timeSteps,
   return res;
 }
 
+//Calcul du payOff pour une optionAsian
+__device__ float payoffAsianGPU(float* path, int timeSteps, float strike, int sizeOpt, float T, int maxDevice){ 
+
+  int ind = (maxDevice * blockIdx.x + threadIdx.x) * (sizeOpt * (timeSteps+1));
+
+  float sum_flow = 0.0;
+
+  for (int i = 0; i<timeSteps+1; i++){
+    sum_flow += path[ind + sizeOpt*i];
+  }
+
+  float payoff = (sum_flow/(timeSteps + 1)) - strike;
+  
+  if (payoff<0.0) {
+    return 0.0;
+  }else{
+    return payoff;
+  }
+
+}
+
+
+//Calcul du payoff d'une optionBarrierLow
+__device__ float payoffBarrierLowGPU(float* path, float* payoffCoeff, float* lowerBarrier, int timeSteps, float strike, int sizeOpt, float T, int maxDevice){
+
+  int ind = (maxDevice * blockIdx.x + threadIdx.x) * (sizeOpt * (timeSteps+1));
+
+  for (int i = 0; i < timeSteps+1; i++){
+    for (int j = 0; j < sizeOpt; j++){
+        if (path[ind + j + i*sizeOpt] < lowerBarrier[j]){
+          return 0;
+        }
+    }
+  }
+
+  float res = 0.0;
+  int indiceDernierligne = timeSteps*sizeOpt;
+  for(int j = 0; j<sizeOpt; j++){
+      res += path[ind + j + indiceDernierligne] * payoffCoeff[j];
+  }
+  res -= strike;
+  if(res<=0.0){
+    res = 0.0;
+  }
+  return res;
+} 
+
+//Calcul du payoff d'une optionBarrierUp
+__device__ float payoffBarrierUpGPU(float* path, float* payoffCoeff, float* upperBarrier, int timeSteps, float strike, int sizeOpt, float T, int maxDevice){
+
+  int ind = (maxDevice * blockIdx.x + threadIdx.x) * (sizeOpt * (timeSteps+1));
+
+  for (int i = 0; i < timeSteps+1; i++){
+    for (int j = 0; j < sizeOpt; j++){
+        if (path[ind + j + i*sizeOpt] > upperBarrier[j]){
+          return 0;
+        }
+    }
+  }
+
+  float res = 0.0;
+  int indiceDernierligne = timeSteps*sizeOpt;
+  for(int j = 0; j<sizeOpt; j++){
+      res += path[ind + j + indiceDernierligne] * payoffCoeff[j];
+  }
+  res -= strike;
+  if(res<=0.0){
+    res = 0.0;
+  }
+  return res;
+} 
 
 
 __global__ void priceGPU(float *tabPrice, float *tabIC, float *tabPath, int size, float r, 

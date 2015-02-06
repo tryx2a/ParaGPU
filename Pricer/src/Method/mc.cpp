@@ -1,5 +1,4 @@
 #include "mc.h"
-//#include "bs.h"
 #include <cstring>
 #include <math.h>
 

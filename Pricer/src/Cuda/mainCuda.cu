@@ -37,7 +37,9 @@ int main(int argc, char ** argv) {
   priceGPU <<<DimGrid, DimBlock>>>(cudaL->tabPrice, cudaL->tabIC, cudaL->tabPath, mc->mod_->size_, mc->mod_->r_, cudaL->spot, cudaL->sigma, cudaL->chol,
                                     mc->opt_->T_, mc->opt_->TimeSteps_, cudaL->payoffCoeff, strike, devStates, cudaL->maxDevice, unsigned(time(NULL)));
 
+  
   float *priceTable = new float[mc->samples_];
+  float *icTable = new float[mc->samples_];
 
 
   cudaError_t err; 
@@ -48,19 +50,36 @@ int main(int argc, char ** argv) {
     exit(EXIT_FAILURE);
   }
 
-
-  //float *icTable = new float[mc->samples_]; 
-  float prixFin = 0;
-  float coeffActu = exp(-mc->mod_->r_*mc->opt_->T_);
-  for(int i = 0; i<mc->samples_; i++){
-      prixFin += priceTable[i];
+  err = cudaMemcpy(icTable, cudaL->tabIC, mc->samples_*sizeof(float), cudaMemcpyDeviceToHost);
+  if(err != cudaSuccess){
+    printf("%s in %s at line %d\n", cudaGetErrorString(err),__FILE__,__LINE__);
+    exit(EXIT_FAILURE);
   }
 
-  prixFin = prixFin*coeffActu/mc->samples_;
+ 
+  float prixReduction = 0.0;
+  float varianceReduction = 0.0;
+  float coeffActu = exp(-mc->mod_->r_*mc->opt_->T_);
 
-  std::cout<<prixFin<<std::endl;
+  for(int i = 0; i<mc->samples_; i++){
+      prixReduction += priceTable[i];
+      varianceReduction += icTable[i];
+  }
+
+  prixReduction /= mc->samples_;
+  varianceReduction /= mc->samples_;
+  
+  float varEstimator = exp(- 2 * (mc->mod_->r_ * mc->opt_->T_)) * (varianceReduction - (prixReduction*prixReduction));
+
+  float prixFin = prixReduction*coeffActu;
+  float ic = 2 * 1.96 * sqrt(varEstimator)/sqrt(mc->samples_);
+
+  std::cout<<"Prix : "<<prixFin<<std::endl;
+  std::cout<<"IC : "<<ic<<std::endl;
+
 
   free(priceTable);
+  free(icTable);
 
   delete P;
   delete mc;
