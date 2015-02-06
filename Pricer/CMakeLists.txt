@@ -53,7 +53,7 @@ set(LIBS ${LIBS} m)
 #install(TARGETS profit-and-loss DESTINATION bin)
 
 
-cuda_add_executable(cuda_info src/cuda_info.cu)
+cuda_add_executable(cuda_info src/Cuda/cuda_info.cu)
 target_link_libraries(cuda_info ${LIBS})
 install(TARGETS cuda_info DESTINATION bin)
 
@@ -61,10 +61,10 @@ install(TARGETS cuda_info DESTINATION bin)
 #target_link_libraries(matrix_simple ${LIBS})
 #install(TARGETS matrix_simple DESTINATION bin)
 
-cuda_add_executable(mainCuda src/mainCuda.cu src/cudaLib.cu src/bs.cpp src/parser.cpp src/utils.cpp src/option.cpp src/mc.cpp src/optionAsian.cpp src/optionBarrier.cpp src/optionBarrierLow.cpp src/optionBarrierUp.cpp src/optionBasket.cpp src/optionPerformance.cpp)
+cuda_add_executable(mainCuda src/Cuda/mainCuda.cu src/Cuda/cudaLib.cu src/Model/bs.cpp src/parser.cpp src/Options/utils.cpp src/Options/option.cpp src/Method/mc.cpp src/Options/optionAsian.cpp src/Options/optionBarrier.cpp src/Options/optionBarrierLow.cpp src/Options/optionBarrierUp.cpp src/Options/optionBasket.cpp src/Options/optionPerformance.cpp)
 target_link_libraries(mainCuda ${LIBS})
 
 
-cuda_add_executable(test_rand_2 src/rand2.cu)
+cuda_add_executable(test_rand_2 src/Cuda/rand2.cu)
 target_link_libraries(test_rand_2 ${LIBS})
 install(TARGETS test_rand_2 DESTINATION bin)
