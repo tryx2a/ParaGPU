@@ -61,7 +61,7 @@ install(TARGETS cuda_info DESTINATION bin)
 #target_link_libraries(matrix_simple ${LIBS})
 #install(TARGETS matrix_simple DESTINATION bin)
 
-cuda_add_executable(mainCuda src/Cuda/mainCuda.cu src/Cuda/cudaLib.cu src/Model/bs.cpp src/parser.cpp src/Options/utils.cpp src/Options/option.cpp src/Method/mc.cpp src/Options/optionAsian.cpp src/Options/optionBarrier.cpp src/Options/optionBarrierLow.cpp src/Options/optionBarrierUp.cpp src/Options/optionBasket.cpp src/Options/optionPerformance.cpp)
+cuda_add_executable(mainCuda src/Cuda/mainCuda.cu src/Cuda/cudaLib.cu src/Cuda/pricer_kernel.cuh src/Model/bs.cpp src/parser.cpp src/Options/utils.cpp src/Options/option.cpp src/Method/mc.cpp src/Options/optionAsian.cpp src/Options/optionBarrier.cpp src/Options/optionBarrierLow.cpp src/Options/optionBarrierUp.cpp src/Options/optionBasket.cpp src/Options/optionPerformance.cpp)
 target_link_libraries(mainCuda ${LIBS})
 
 
