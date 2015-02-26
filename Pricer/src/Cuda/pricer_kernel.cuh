@@ -192,17 +192,17 @@ __device__ float payoffPerformance(float* path, float* payoffCoeff, int timeStep
   for(int i = 1 ; i <= timeSteps ; i++){
   
     //Compute numerator and denom
-    for(int d = 0 ; d < this->size_ ; d++){
+    for(int d = 0 ; d < sizeOpt ; d++){
       
       num += path[ind + d + i*sizeOpt] * payoffCoeff[d];
-      den += path[ind + d + (i-1)*sizeOpt] * payofCoeff[d];
+      den += path[ind + d + (i-1)*sizeOpt] * payoffCoeff[d];
       
     }
     //Compute of ratio
     ratio += num/den; 
   }
 
-  ratio = ratio/this->TimeSteps_ - 1;
+  ratio = ratio/timeSteps - 1;
   
   //Refresh ratio
   if(ratio < 0){
