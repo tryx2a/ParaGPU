@@ -154,6 +154,71 @@ __device__ float payoffBarrierUpGPU(float* path, float* payoffCoeff, float* uppe
   return res;
 } 
 
+//Calcul du payoff d'une optionBarrier
+__device__ float payoffBarrierGPU(float* path, float* payoffCoeff, float* upperBarrier, float* lowerBarrier, int timeSteps, float strike, int sizeOpt, float T, int maxDevice){
+
+  int ind = (maxDevice * blockIdx.x + threadIdx.x) * (sizeOpt * (timeSteps+1));
+
+  for (int i = 0; i < timeSteps+1; i++){
+    for (int j = 0; j < sizeOpt; j++){
+        if (path[ind + j + i*sizeOpt] > upperBarrier[j] || path[ind + j + i*sizeOpt] < lowerBarrier[j]){
+          return 0;
+        }
+    }
+  }
+
+  float res = 0.0;
+  int indiceDernierligne = timeSteps*sizeOpt;
+  for(int j = 0; j<sizeOpt; j++){
+      res += path[ind + j + indiceDernierligne] * payoffCoeff[j];
+  }
+  res -= strike;
+  if(res<=0.0){
+    res = 0.0;
+  }
+  return res;
+}
+
+//Calcul du payoff d'une optionPerformance
+__device__ float payoffPerformance(float* path, float* payoffCoeff, int timeSteps, int sizeOpt, float T, int maxDevice){
+
+  int ind = (maxDevice * blockIdx.x + threadIdx.x) * (sizeOpt * (timeSteps+1));
+
+  float ratio = 0.0;
+  float num = 0.0; 
+  float den = 0.0;
+
+  //Sum coeff ratio
+  for(int i = 1 ; i <= timeSteps ; i++){
+  
+    //Compute numerator and denom
+    for(int d = 0 ; d < this->size_ ; d++){
+      
+      num += path[ind + d + i*sizeOpt] * payoffCoeff[d];
+      den += path[ind + d + (i-1)*sizeOpt] * payofCoeff[d];
+      
+    }
+    //Compute of ratio
+    ratio += num/den; 
+  }
+
+  ratio = ratio/this->TimeSteps_ - 1;
+  
+  //Refresh ratio
+  if(ratio < 0){
+    ratio = 0;
+  }
+
+  //Compute min
+  if(ratio > 0.1){
+    return 1.1;
+  }else{
+    return 1 + ratio;
+  }  
+
+}
+
+
 
 __global__ void priceGPU(float *tabPrice, float *tabIC, float *tabPath, int size, float r, 
                          float *spot, float *sigma, float *chol, float T, int timeSteps, float *payoffCoeff,
@@ -167,5 +232,4 @@ __global__ void priceGPU(float *tabPrice, float *tabIC, float *tabPath, int size
 
     tabPrice[ind] = payOff;
     tabIC[ind] = payOff * payOff;
-
 }
