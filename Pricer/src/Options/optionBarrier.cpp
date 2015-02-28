@@ -11,6 +11,7 @@ OptionBarrier::OptionBarrier(const double T_, const int timeSteps_, const int si
   this->payoffCoeff_ = pnl_vect_copy(payoffCoeff_);
   this->lowerBarrier_ = pnl_vect_copy(lowerBarrier_);
   this->upperBarrier_ = pnl_vect_copy(upperBarrier_);
+  this->id_=2;
 }
 
 OptionBarrier::~OptionBarrier(){

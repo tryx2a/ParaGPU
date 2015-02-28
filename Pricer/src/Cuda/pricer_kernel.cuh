@@ -17,7 +17,7 @@ __device__ float generate( curandState* globalState, int maxDevice)
 }
 
 
-//Generateur aleatoire
+//Initialisation du generateur aleatoire
 __device__ void setup_kernel ( curandState * state, unsigned long seed, int maxDevice)
 {
     int ind = maxDevice * blockIdx.x + threadIdx.x;
@@ -65,6 +65,7 @@ __device__ void assetGPU(float* path, float T, int N, int sizeOpt, float* spot, 
 
 }
 
+
 //Calcul du payOff pour une optionBasket
 __device__ float payoffBasketGPU(float* path, float* payoffCoeff, int timeSteps, float strike, int sizeOpt, float T, int maxDevice){ 
 
@@ -81,6 +82,7 @@ __device__ float payoffBasketGPU(float* path, float* payoffCoeff, int timeSteps,
   }
   return res;
 }
+
 
 //Calcul du payOff pour une optionAsian
 __device__ float payoffAsianGPU(float* path, int timeSteps, float strike, int sizeOpt, float T, int maxDevice){ 
@@ -129,6 +131,7 @@ __device__ float payoffBarrierLowGPU(float* path, float* payoffCoeff, float* low
   return res;
 } 
 
+
 //Calcul du payoff d'une optionBarrierUp
 __device__ float payoffBarrierUpGPU(float* path, float* payoffCoeff, float* upperBarrier, int timeSteps, float strike, int sizeOpt, float T, int maxDevice){
 
@@ -154,6 +157,7 @@ __device__ float payoffBarrierUpGPU(float* path, float* payoffCoeff, float* uppe
   return res;
 } 
 
+
 //Calcul du payoff d'une optionBarrier
 __device__ float payoffBarrierGPU(float* path, float* payoffCoeff, float* upperBarrier, float* lowerBarrier, int timeSteps, float strike, int sizeOpt, float T, int maxDevice){
 
@@ -178,6 +182,7 @@ __device__ float payoffBarrierGPU(float* path, float* payoffCoeff, float* upperB
   }
   return res;
 }
+
 
 //Calcul du payoff d'une optionPerformance
 __device__ float payoffPerformance(float* path, float* payoffCoeff, int timeSteps, int sizeOpt, float T, int maxDevice){
@@ -219,17 +224,46 @@ __device__ float payoffPerformance(float* path, float* payoffCoeff, int timeStep
 }
 
 
+//Choix de la bonne méthode de payoff à appeler
+__device__ float payoffGPU(float* path, float* payoffCoeff, float* upperBarrier, float* lowerBarrier, 
+                          int timeSteps, float strike, int sizeOpt, float T, int maxDevice, int idOpt) {
 
-__global__ void priceGPU(float *tabPrice, float *tabIC, float *tabPath, int size, float r, 
+  if(idOpt == 1){ //Option Asian
+    return payoffAsianGPU(path, timeSteps, strike, sizeOpt, T, maxDevice);
+  }
+  else if(idOpt == 2){ //Option Barrière
+    return payoffBarrierGPU(path, payoffCoeff, upperBarrier, lowerBarrier, timeSteps, strike, sizeOpt, T, maxDevice);
+  }
+  else if(idOpt == 3){ //Option Barrière Basse
+    return payoffBarrierLowGPU(path, payoffCoeff, lowerBarrier, timeSteps, strike, sizeOpt, T, maxDevice);
+  }
+  else if(idOpt == 4){ //Option Barrière Haute
+    return payoffBarrierUpGPU(path, payoffCoeff, upperBarrier, timeSteps, strike, sizeOpt, T, maxDevice);
+  }
+  else if(idOpt == 5){ //Option Basket
+    return payoffBasketGPU(path, payoffCoeff, timeSteps, strike, sizeOpt, T, maxDevice);
+  }
+  else if(idOpt == 6){ //Option Performance
+    return payoffPerformance(path, payoffCoeff, timeSteps, sizeOpt, T, maxDevice);
+  }
+  else{ //Ne devrait jamais arriver
+    return 0.0;
+  }
+} 
+
+
+//Calcul du prix d'une option donnée
+__global__ void priceGPU(float *tabPrice, float *tabVar, float *tabPath, int size, float r, 
                          float *spot, float *sigma, float *chol, float T, int timeSteps, float *payoffCoeff,
-                         float strike, curandState* globalState, int maxDevice, unsigned long seed) {
+                         float *lowerBarrier, float *upperBarrier, float strike, int idOption,
+                         curandState* globalState, int maxDevice, unsigned long seed) {
 
     int ind = maxDevice * blockIdx.x + threadIdx.x;
     setup_kernel (globalState, seed, maxDevice);
     
     assetGPU(tabPath, T, timeSteps, size, spot, sigma, chol, r, globalState, maxDevice);
-    float payOff = payoffBasketGPU(tabPath, payoffCoeff, timeSteps, strike, size, T, maxDevice);
+    float payOff = payoffGPU(tabPath, payoffCoeff, upperBarrier, lowerBarrier, timeSteps, strike, size, T, maxDevice, idOption);
 
     tabPrice[ind] = payOff;
-    tabIC[ind] = payOff * payOff;
+    tabVar[ind] = payOff * payOff;
 }

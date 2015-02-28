@@ -11,6 +11,7 @@ using namespace std;
 OptionBasket::OptionBasket(const double T_, const int timeSteps_, const int size_, const double strike_, const PnlVect* payoffCoeff_) : Option(T_, timeSteps_, size_){
   this->strike_ = strike_;
   this->payoffCoeff_ = pnl_vect_copy(payoffCoeff_);
+  this->id_=5;
 }
 
 /**

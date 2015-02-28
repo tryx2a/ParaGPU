@@ -10,6 +10,7 @@ OptionBarrierUp::OptionBarrierUp(const double T_, const int timeSteps_, const in
   this->strike_ = strike_;
   this->payoffCoeff_ = pnl_vect_copy(payoffCoeff_);
   this->upperBarrier_ = pnl_vect_copy(upperBarrier_);
+  this->id_=4;
 }
 
 OptionBarrierUp::~OptionBarrierUp(){

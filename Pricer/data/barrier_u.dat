@@ -9,6 +9,7 @@ volatility <vector> 0.25
 interest rate <float>  0.05
 correlation <float> 0.3
 
+trend <vector> 0.03
 option type <string> barrier_u
 payoff coefficients <vector> 0.2 0.2 0.2 0.2 0.2
 upper barrier <vector> 70 60 85 50 45

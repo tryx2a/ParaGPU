@@ -17,12 +17,15 @@ public:
         
         /* Paramètres Option */
         float *payoffCoeff; /// payoff coefficient
+        float *lowerBarrier; /// barrière basse
+        float *upperBarrier; /// barrière haute
 
 
         /* Paramètres autres */
+        float strike; ///Strike de l'option
         float *tabPath; /// Tableau contenant une matrice path par device
         float *tabPrice; /// Tableau contenant le prix calculé par chaque thread
-        float *tabIC; /// Tableau contenant la longueur de l'interval de confiance calculé par chaque thread
+        float *tabVar; /// Tableau contenant la longueur de la variance calculée par chaque thread
 
 
         /**
@@ -32,6 +35,7 @@ public:
          * valorisation du produit.
          */
 	CudaLib(MonteCarlo* mc);
+
 
         /**
          * Destructeur de CudaLib

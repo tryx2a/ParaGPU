@@ -14,8 +14,8 @@ trend <vector> 0.05
 option type <string> basket
 payoff coefficients <vector> 0.025
 
-timestep number <int> 20
+timestep number <int> 1
 hedging dates number <int> 30
 fd step <float> 0.1
-sample number <int> 1000
+sample number <int> 50000
 

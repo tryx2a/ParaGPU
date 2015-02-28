@@ -10,6 +10,7 @@ using namespace std;
 OptionPerformance::OptionPerformance(double T_, int timeSteps_, int size_, PnlVect* payoffCoeff): Option(T_, timeSteps_, size_)
 {
 	this->payoffCoeff_ = payoffCoeff;
+	this->id_=6;
 }
 
 /**

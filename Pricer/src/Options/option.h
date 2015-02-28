@@ -11,6 +11,7 @@ public:
   double T_; /// maturité
   int TimeSteps_; /// nombre de pas de temps de discrétisation
   int size_; /// dimension du modèle, redondant avec BS::size_
+  int id_; /// id de l'option, dépend du type de l'option
   
   /**
    * Constructeur de la classe Option

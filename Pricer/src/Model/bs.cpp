@@ -77,19 +77,19 @@ void BS::asset(PnlMat *path, double t, int N, double T, PnlRng *rng, const PnlMa
 	else{	
 
 		//On remplit la matrice path jusqu'à l'indice index via la matrice past
-		for (int i = 0; i < index; i++){
+		for (int i = 0; i <= index; i++){
 			for (int j = 0; j < this->size_; j++){
 				if(i==0){
 					MLET(path,i,j) = MGET(past,i,j); 
 				}
 				else{
-					MLET(path,i,j) = MGET(past,(int)((double)past->m * i/(index) + 0.5),j);
+					MLET(path,i,j) = MGET(past,(int)((double)(past->m - 1) * i/(index) + 0.5),j);
 				}
 			}
 		}
 
 		// On simule le reste de la trajectoire
-		for (int i = index; i < path->m; i++){
+		for (int i = index + 1; i < path->m; i++){
 			//Create the gaussian for each simulation
 			pnl_vect_rng_normal(vectorGaussian,this->size_,rng);
 			for(int j = 0; j < this->size_; j++){

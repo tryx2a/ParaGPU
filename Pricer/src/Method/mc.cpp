@@ -266,7 +266,7 @@ void MonteCarlo::delta(const PnlMat *past, double t, PnlVect *delta, PnlVect *ic
   PnlMat* path_shift_up = pnl_mat_create(this->opt_->TimeSteps_+1, nbAsset);
   PnlMat* path_shift_down = pnl_mat_create(this->opt_->TimeSteps_+1, nbAsset);
   PnlMat* path = pnl_mat_create(this->opt_->TimeSteps_+1, nbAsset);
-  PnlVect* sum=pnl_vect_create(nbAsset);
+  PnlVect* sum = pnl_vect_create_from_zero(nbAsset);
   double tstep=this->opt_->T_/this->opt_->TimeSteps_;
 
   for (int j = 0; j < this->samples_; ++j){

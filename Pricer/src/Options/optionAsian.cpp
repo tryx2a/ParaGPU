@@ -7,6 +7,7 @@ using namespace std;
 OptionAsian::OptionAsian(double T_, int TimeSteps_, int size_, double strike_):Option(T_,TimeSteps_,size_)
 {
 	this->strike_=strike_;
+	this->id_=1;
 }
 
 
