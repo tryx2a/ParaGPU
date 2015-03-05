@@ -32,8 +32,6 @@ MonteCarlo::MonteCarlo(Param* P)
 }
 
 MonteCarlo::~MonteCarlo(){
-  delete (this->mod_)->spot_;
-  delete (this->mod_)->sigma_;
   delete this->mod_;
   pnl_rng_free(&(this->rng));
   delete this->opt_;

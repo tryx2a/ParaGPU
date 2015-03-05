@@ -29,6 +29,13 @@ BS::~BS()
 {
 	//Free the cholesky matrix
 	pnl_mat_free(&chol);
+
+	pnl_vect_free(&spot_);
+	pnl_vect_free(&sigma_);
+
+	if(trend != NULL){
+		pnl_vect_free(&trend);
+	}
 }
 
 void BS::computeCholesky(PnlMat *chol,double rho_)

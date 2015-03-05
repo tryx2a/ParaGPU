@@ -59,9 +59,12 @@ int main(int argc, char ** argv) {
 
   float payoffReduction = 0.0;
   float payoffSquareReduction = 0.0;
+  float host_result_price = 0.0;
+  float host_result_var = 0.0;
 
   int puissance = (int)(log(num_elements)/log(2));
-  
+  float *host_tab_price = new float[num_blocks];
+  float *host_tab_var = new float[num_blocks];
 
   while( puissance >= 9){ // car 2^9 = 512
 
@@ -69,15 +72,19 @@ int main(int argc, char ** argv) {
     block_sum<<<num_blocks,block_size,block_size * sizeof(float)>>>(cudaL->tabPrice + (mc->samples_ - num_elements), d_partial_sums_and_total_price, num_elements);
     block_sum<<<num_blocks,block_size,block_size * sizeof(float)>>>(cudaL->tabVar + (mc->samples_ - num_elements), d_partial_sums_and_total_var, num_elements);
 
-    // launch a single block to compute the sum of the partial sums
-    block_sum<<<1,num_blocks,num_blocks * sizeof(float)>>>(d_partial_sums_and_total_price, device_result_price, num_blocks);
-    block_sum<<<1,num_blocks,num_blocks * sizeof(float)>>>(d_partial_sums_and_total_var, device_result_var, num_blocks);
+    int blocks = (int)(pow(2.0,puissance))/cudaL->maxDevice;
+
+    cudaMemcpy(host_tab_price, d_partial_sums_and_total_price, sizeof(float)*blocks, cudaMemcpyDeviceToHost);
+    cudaMemcpy(host_tab_var, d_partial_sums_and_total_var, sizeof(float)*blocks, cudaMemcpyDeviceToHost);
 
     // copy the result back to the host
-    float host_result_price = 0;
-    float host_result_var = 0;
-    cudaMemcpy(&host_result_price, device_result_price, sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&host_result_var, device_result_var, sizeof(float), cudaMemcpyDeviceToHost);
+    host_result_price = 0.0;
+    host_result_var = 0.0;
+
+    for(int i = 0; i<blocks; i++){
+      host_result_price += host_tab_price[i]; 
+      host_result_var += host_tab_var[i];
+    }
 
     payoffReduction += host_result_price;
     payoffSquareReduction += host_result_var;
@@ -88,11 +95,6 @@ int main(int argc, char ** argv) {
 
   }
 
-  // deallocate device memory
-  cudaFree(d_partial_sums_and_total_price);
-  cudaFree(device_result_price);
-  cudaFree(d_partial_sums_and_total_var);
-  cudaFree(device_result_var);
 
   payoffReduction /= mc->samples_;
   payoffSquareReduction /= mc->samples_;
@@ -107,6 +109,13 @@ int main(int argc, char ** argv) {
   std::cout<<"IC : "<<ic<<std::endl;
 
 
+  // deallocate device memory
+  cudaFree(d_partial_sums_and_total_price);
+  cudaFree(device_result_price);
+  cudaFree(d_partial_sums_and_total_var);
+  cudaFree(device_result_var);
+  delete host_tab_price;
+  delete host_tab_var;
   delete P;
   delete mc;
   delete cudaL;

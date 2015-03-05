@@ -10,7 +10,7 @@ volatility <vector> 0.3
 interest rate <float> 0.03
 trend <vector> 0.03
 option type <string> asian
-timestep number <int> 70
+timestep number <int> 25
 hedging dates number <int> 30
 fd step <float> 0.1
 sample number <int> 100000
