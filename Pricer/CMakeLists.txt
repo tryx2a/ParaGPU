@@ -38,11 +38,16 @@ include_directories(${PNL_INCLUDE_DIRS})
 # Add math lib
 set(LIBS ${LIBS} m)
 
+add_executable(price_option test/integration/price_option.cpp src/Model/bs.cpp src/parser.cpp src/Options/utils.cpp src/Options/option.cpp src/Method/mc.cpp src/Options/optionAsian.cpp src/Options/optionBarrier.cpp src/Options/optionBarrierLow.cpp src/Options/optionBarrierUp.cpp src/Options/optionBasket.cpp src/Options/optionPerformance.cpp)
+target_link_libraries(price_option ${LIBS})
 
 cuda_add_executable(cuda_info src/Cuda/cuda_info.cu)
 target_link_libraries(cuda_info ${LIBS})
 install(TARGETS cuda_info DESTINATION bin)
 
 cuda_add_executable(mainCuda src/Cuda/mainCuda.cu src/Cuda/cudaLib.cu src/Cuda/pricer_kernel.cuh src/Model/bs.cpp src/parser.cpp src/Options/utils.cpp src/Options/option.cpp src/Method/mc.cpp src/Options/optionAsian.cpp src/Options/optionBarrier.cpp src/Options/optionBarrierLow.cpp src/Options/optionBarrierUp.cpp src/Options/optionBasket.cpp src/Options/optionPerformance.cpp)
+target_link_libraries(mainCuda ${LIBS})
+
+cuda_add_executable(reduction src/Cuda/test_reduction.cu)
 target_link_libraries(mainCuda ${LIBS})
 

@@ -1,3 +1,7 @@
+#ifndef _CUDALIB_H
+#define _CUDALIB_H
+
+
 #include <cuda.h>
 #include "../Model/bs.h"
 #include "../Options/option.h"
@@ -87,3 +91,5 @@ public:
 
 	
 };
+
+#endif /* _CUDALIB_H */

@@ -1,6 +1,6 @@
-#include "../../src/bs.h"
+#include "../../src//Model/bs.h"
 #include "../../src/parser.h"
-#include "../../src/mc.h"
+#include "../../src/Method/mc.h"
 #include <iostream>
 #include <stdlib.h>
 #include <math.h>
@@ -18,7 +18,6 @@ int main(int argc, char const *argv[])
   mc->price(prix, ic);
   cout << "Output : " << endl << "Price : " << prix << endl << "Confidence interval : " << ic << endl;
 
-  //delete opt;
   delete P;
   delete mc;
   return 0;

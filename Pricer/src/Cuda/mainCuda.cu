@@ -10,6 +10,7 @@
 
 #include <curand.h>
 #include <curand_kernel.h>
+#include <sys/time.h>
 
 
 
@@ -36,56 +37,80 @@ int main(int argc, char ** argv) {
                                     mc->opt_->T_, mc->opt_->TimeSteps_, cudaL->payoffCoeff, cudaL->lowerBarrier, cudaL->upperBarrier, cudaL->strike, 
                                     mc->opt_->id_, devStates, cudaL->maxDevice, unsigned(time(NULL)));
 
-  
-  float *priceTable = new float[mc->samples_];
-  float *varTable = new float[mc->samples_];
-
-  cudaError_t err; 
-
-  //Copie du tableau de prix calculé sur le GPU sur le processeur
-  err = cudaMemcpy(priceTable, cudaL->tabPrice, mc->samples_*sizeof(float), cudaMemcpyDeviceToHost);
-  if(err != cudaSuccess){
-    printf("%s in %s at line %d\n", cudaGetErrorString(err),__FILE__,__LINE__);
-    exit(EXIT_FAILURE);
-  }
-
-  //Copie du tableau de variance calculé sur le GPU sur le processeur
-  err = cudaMemcpy(varTable, cudaL->tabVar, mc->samples_*sizeof(float), cudaMemcpyDeviceToHost);
-  if(err != cudaSuccess){
-    printf("%s in %s at line %d\n", cudaGetErrorString(err),__FILE__,__LINE__);
-    exit(EXIT_FAILURE);
-  }
 
   /*
-   * Réduction des calculs et calcul du prix et de l'IC
-   */
-  float prixReduction = 0.0;
-  float varianceReduction = 0.0;
-  float coeffActu = exp(-mc->mod_->r_*mc->opt_->T_);
+   * Réduction
+   */ 
 
-  for(int i = 0; i<mc->samples_; i++){
-      prixReduction += priceTable[i];
-      varianceReduction += varTable[i];
+  //Constantes définissant la grille à utiliser pour l'allocation de la grille
+  int num_elements = mc->samples_;
+  size_t block_size = cudaL->maxDevice;
+  size_t num_blocks = mc->samples_/cudaL->maxDevice;
+
+  //Allocation des variables qui contiendront les résultats des réductions
+  float *d_partial_sums_and_total_price;
+  float *device_result_price;
+  float *d_partial_sums_and_total_var;
+  float *device_result_var;
+  cudaMalloc((void**)&d_partial_sums_and_total_price, sizeof(float) * num_blocks);
+  cudaMalloc((void**)&device_result_price, sizeof(float));
+  cudaMalloc((void**)&d_partial_sums_and_total_var, sizeof(float) * num_blocks);
+  cudaMalloc((void**)&device_result_var, sizeof(float));
+
+  float payoffReduction = 0.0;
+  float payoffSquareReduction = 0.0;
+
+  int puissance = (int)(log(num_elements)/log(2));
+  
+
+  while( puissance >= 9){ // car 2^9 = 512
+
+    // launch one kernel to compute, per-block, a partial sum
+    block_sum<<<num_blocks,block_size,block_size * sizeof(float)>>>(cudaL->tabPrice + (mc->samples_ - num_elements), d_partial_sums_and_total_price, num_elements);
+    block_sum<<<num_blocks,block_size,block_size * sizeof(float)>>>(cudaL->tabVar + (mc->samples_ - num_elements), d_partial_sums_and_total_var, num_elements);
+
+    // launch a single block to compute the sum of the partial sums
+    block_sum<<<1,num_blocks,num_blocks * sizeof(float)>>>(d_partial_sums_and_total_price, device_result_price, num_blocks);
+    block_sum<<<1,num_blocks,num_blocks * sizeof(float)>>>(d_partial_sums_and_total_var, device_result_var, num_blocks);
+
+    // copy the result back to the host
+    float host_result_price = 0;
+    float host_result_var = 0;
+    cudaMemcpy(&host_result_price, device_result_price, sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&host_result_var, device_result_var, sizeof(float), cudaMemcpyDeviceToHost);
+
+    payoffReduction += host_result_price;
+    payoffSquareReduction += host_result_var;
+
+    num_elements -= (int)(pow(2.0,puissance));
+    num_blocks = num_elements/cudaL->maxDevice;
+    puissance = (int)(log(num_elements)/log(2));
+
   }
 
-  prixReduction /= mc->samples_;
-  varianceReduction /= mc->samples_;
-  
-  float varEstimator = exp(- 2 * (mc->mod_->r_ * mc->opt_->T_)) * (varianceReduction - (prixReduction*prixReduction));
+  // deallocate device memory
+  cudaFree(d_partial_sums_and_total_price);
+  cudaFree(device_result_price);
+  cudaFree(d_partial_sums_and_total_var);
+  cudaFree(device_result_var);
 
-  float prixFin = prixReduction*coeffActu;
+  payoffReduction /= mc->samples_;
+  payoffSquareReduction /= mc->samples_;
+
+  float coeffActu = exp(-mc->mod_->r_*mc->opt_->T_);
+  float varEstimator = exp(- 2 * (mc->mod_->r_ * mc->opt_->T_)) * (payoffSquareReduction - (payoffReduction*payoffReduction));
+
+  float prixFin = payoffReduction*coeffActu;
   float ic = 2 * 1.96 * sqrt(varEstimator)/sqrt(mc->samples_);
 
   std::cout<<"Prix : "<<prixFin<<std::endl;
   std::cout<<"IC : "<<ic<<std::endl;
 
 
-  free(priceTable);
-  free(varTable);
-
   delete P;
   delete mc;
-
+  delete cudaL;
  
 	return 0;
 }
+
